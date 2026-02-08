@@ -18,8 +18,8 @@ docker run -it --rm --privileged \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v /dev:/dev \
-    -v $REPO_ROOT:/exp-esp32 \
-    -w /exp-esp32/resources/micro-ros \
+    -v $SCRIPT_DIR:/micro-ros \
+    -w /micro-ros \
     --name "$CONTAINER_NAME" \
 micro-ros-agent:${DOCKER_ROS_DISTRO} bash -c "$CMD"
 

@@ -1,4 +1,4 @@
-SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GIT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 xhost +

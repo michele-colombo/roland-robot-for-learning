@@ -146,6 +146,23 @@ void curr_velocity_timer_cbk(rcl_timer_t* timer, int64_t)
 // ================================================================
 // Helpers
 // ================================================================
+
+// Safe to call before driver.init(): forces all PWM pins LOW at the GPIO level.
+// motor.disable() / driver.disable() must NOT be called before driver.init()
+// because driver->params is nullptr until then, causing a null-pointer crash
+// inside _writeDutyCycle3PWM on ESP32.
+void safeMotorPinsLow()
+{
+  const int pins[] = {
+    pin_right_in1, pin_right_in2, pin_right_in3,
+    pin_left_in1,  pin_left_in2,  pin_left_in3
+  };
+  for (int pin : pins) {
+    pinMode(pin, OUTPUT);
+    digitalWrite(pin, LOW);
+  }
+}
+
 void disableAllMotors()
 {
   for (int i = 0; i < motorCount; ++i)
@@ -229,7 +246,12 @@ void control_loop(void*)
 // ================================================================
 void setup()
 {
-  // micro-ROS
+  // Force all motor PWM pins low immediately, before anything else.
+  // This is to ensure output pins are in a known safe state even if
+  // micro-ROS or motor init failse and prevent them from heating up due to DC lock.
+  safeMotorPinsLow();
+
+  // micro-ROS (may block here waiting for agent)
   set_microros_transports();
 
   allocator = rcl_get_default_allocator();
@@ -271,12 +293,10 @@ void setup()
   }
 
   // Only start tasks if all motors initialized successfully.
-  // A failed initFOC() leaves the driver in an indeterminate PWM state;
-  // running the control loop in that condition causes DC lock and overheating.
   if (!allMotorsInitialized()) {
     disableAllMotors();
     return; // halt here; loop() will idle safely
-    // TODO: instead of returing here, send some ros message to notify about the failure
+    // TODO: instead of returning here, send some ros message to notify about the failure
   }
 
   // Tasks

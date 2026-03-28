@@ -65,6 +65,7 @@ struct MotorSide
   // Control
   float targetVelocity;
   float lastAngle;
+  bool  initialized;
 
   // micro-ROS
   const char* cmdTopic;
@@ -83,6 +84,7 @@ struct MotorSide
   , driver(in1, in2, in3)
   , targetVelocity(0.0f)
   , lastAngle(0.0f)
+  , initialized(false)
   {}
 };
 
@@ -144,6 +146,19 @@ void curr_velocity_timer_cbk(rcl_timer_t* timer, int64_t)
 // ================================================================
 // Helpers
 // ================================================================
+void disableAllMotors()
+{
+  for (int i = 0; i < motorCount; ++i)
+    motors[i]->motor.disable();
+}
+
+bool allMotorsInitialized()
+{
+  for (int i = 0; i < motorCount; ++i)
+    if (!motors[i]->initialized) return false;
+  return true;
+}
+
 void initMotor(MotorSide& m)
 {
   m.sensor.init(m.wire);
@@ -161,7 +176,7 @@ void initMotor(MotorSide& m)
   m.motor.LPF_velocity.Tf = motor_LPF_velocity_Tf;
 
   m.motor.init();
-  m.motor.initFOC();
+  m.initialized = m.motor.initFOC();
 }
 
 void initMotorRos(MotorSide& m, rclc_subscription_callback_t cbk)
@@ -214,6 +229,7 @@ void control_loop(void*)
 // ================================================================
 void setup()
 {
+  // micro-ROS
   set_microros_transports();
 
   allocator = rcl_get_default_allocator();
@@ -252,6 +268,15 @@ void setup()
   // Motors
   for (int i = 0; i < motorCount; ++i) {
     initMotor(*motors[i]);
+  }
+
+  // Only start tasks if all motors initialized successfully.
+  // A failed initFOC() leaves the driver in an indeterminate PWM state;
+  // running the control loop in that condition causes DC lock and overheating.
+  if (!allMotorsInitialized()) {
+    disableAllMotors();
+    return; // halt here; loop() will idle safely
+    // TODO: instead of returing here, send some ros message to notify about the failure
   }
 
   // Tasks

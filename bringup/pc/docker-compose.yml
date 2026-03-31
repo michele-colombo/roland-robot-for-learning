@@ -1,0 +1,13 @@
+services:
+  roland-pc:
+    image: my_ros:jazzy
+    container_name: roland-pc
+    privileged: true
+    network_mode: host
+    ipc: host
+    pid: host
+    stdin_open: true
+    tty: true
+    volumes:
+      - ${REPO_ROOT}:/GIT/roland-robot-for-learning
+    entrypoint: /GIT/roland-robot-for-learning/bringup/pc/entrypoint.sh

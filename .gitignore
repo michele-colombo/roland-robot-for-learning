@@ -1,3 +1,4 @@
 ros_ws
 
 *.pyc
+**/__pycache__/

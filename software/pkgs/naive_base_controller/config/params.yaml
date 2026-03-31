@@ -1,0 +1,12 @@
+naive_base_controller:
+  ros__parameters:
+    # Wheel geometry
+    wheel_radius: 0.00176        # [m]
+    wheel_distance: 0.28       # [m]  (track width, centre-to-centre)
+
+    # Motor mounting – set to true if the motor spins the "wrong" way
+    invert_left_wheel: true
+    invert_right_wheel: false
+
+    # Safety clamp – symmetric, applied after inversion
+    max_wheel_velocity: 50.0  # [rad/s]

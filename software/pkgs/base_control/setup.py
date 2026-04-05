@@ -2,7 +2,7 @@ import os
 from glob import glob
 from setuptools import find_packages, setup
 
-package_name = 'naive_base_controller'
+package_name = 'base_control'
 
 setup(
     name=package_name,
@@ -18,7 +18,7 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    description='A naive controller to convert Twist messages to motor commands',
+    description='Controller to convert Twist messages to motor commands',
     extras_require={
         'test': [
             'pytest',
@@ -26,7 +26,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'naive_base_controller = naive_base_controller.naive_base_controller_node:main',
+            'base_controller = base_control.base_controller_node:main',
         ],
     },
 )

@@ -15,8 +15,8 @@
 const int pin_spi_mosi = 23;
 const int pin_spi_miso = 19;
 const int pin_spi_clk  = 18;
-const int pin_cs_yaw   = 0;
-const int pin_cs_pitch = 2;
+const int pin_cs_yaw   = 2;
+const int pin_cs_pitch = 0;
 
 // Yaw motor
 const int pin_yaw_in1 = 14;
@@ -24,9 +24,9 @@ const int pin_yaw_in2 = 27;
 const int pin_yaw_in3 = 26;
 
 // Pitch motor
-const int pin_pitch_in1 = 17;
-const int pin_pitch_in2 = 16;
-const int pin_pitch_in3 = 13;
+const int pin_pitch_in1 = 25;
+const int pin_pitch_in2 = 33;
+const int pin_pitch_in3 = 32;
 
 // ================================================================
 // Motor params

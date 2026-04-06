@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    invert_yaw: false
+    invert_pitch: false
+    max_velocity: 50.0    # [rad/s]

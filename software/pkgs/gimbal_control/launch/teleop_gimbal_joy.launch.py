@@ -21,7 +21,7 @@ def generate_launch_description():
         ),
         Node(
             package='gimbal_control',
-            executable='teleop_gimbal_joy_node',
+            executable='teleop_gimbal_joy',
             name='teleop_gimbal_joy',
             parameters=[LaunchConfiguration('params_file')],
             output='screen',

@@ -21,7 +21,7 @@ def generate_launch_description():
         ),
         Node(
             package='base_control',
-            executable='base_controller_node',
+            executable='base_controller',
             name='base_controller',
             parameters=[LaunchConfiguration('params_file')],
             output='screen',

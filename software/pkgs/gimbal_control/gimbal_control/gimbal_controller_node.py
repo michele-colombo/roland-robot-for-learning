@@ -5,8 +5,8 @@ Forwards angular velocity commands from /gimbal/cmd_vel (geometry_msgs/Twist)
 to the individual gimbal motor topics as std_msgs/Float32.
 
 FLU convention:
-    angular.z  ->  /gimbal_yaw/cmd_velocity
-    angular.y  ->  /gimbal_pitch/cmd_velocity
+    angular.z  ->  /gimbal_yaw/cmd_vel
+    angular.y  ->  /gimbal_pitch/cmd_vel
 
 Parameters:
     invert_yaw       (bool)   - flip yaw output sign
@@ -33,9 +33,9 @@ class GimbalController(Node):
         self.add_on_set_parameters_callback(self._on_param_change)
 
         self.pub_yaw = self.create_publisher(
-            Float32, '/gimbal_yaw/cmd_velocity', 10)
+            Float32, '/gimbal_yaw/cmd_vel', 10)
         self.pub_pitch = self.create_publisher(
-            Float32, '/gimbal_pitch/cmd_velocity', 10)
+            Float32, '/gimbal_pitch/cmd_vel', 10)
 
         self.sub = self.create_subscription(
             Twist, '/gimbal/cmd_vel', self._cmd_vel_callback, 10)

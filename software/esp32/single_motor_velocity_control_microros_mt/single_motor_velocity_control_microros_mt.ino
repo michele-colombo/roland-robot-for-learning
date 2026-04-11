@@ -26,15 +26,15 @@ const float motor_voltage_limit  = 6.0;
 
 // ---------------- micro-ROS ----------------
 const char node_name[] = "motor_" MOTOR_SIDE "_node";
-const char cmd_velocity_topic_name[] = "/motor_" MOTOR_SIDE "/cmd_velocity";
-const char curr_velocity_topic_name[] = "/motor_" MOTOR_SIDE "/curr_velocity";
-rcl_publisher_t curr_velocity_pub;
-rcl_subscription_t cmd_velocity_sub;
-rcl_timer_t curr_velocity_timer;
-int curr_velocity_pub_interval = 100; // ms
+const char cmd_vel_topic_name[] = "/motor_" MOTOR_SIDE "/cmd_vel";
+const char curr_vel_topic_name[] = "/motor_" MOTOR_SIDE "/curr_vel";
+rcl_publisher_t curr_vel_pub;
+rcl_subscription_t cmd_vel_sub;
+rcl_timer_t curr_vel_timer;
+int curr_vel_pub_interval = 100; // ms
 
-std_msgs__msg__Float32 curr_velocity_msg;
-std_msgs__msg__Float32 cmd_velocity_msg;
+std_msgs__msg__Float32 curr_vel_msg;
+std_msgs__msg__Float32 cmd_vel_msg;
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -53,7 +53,7 @@ float target_velocity = 0.0f;
 // ------------------------------------------------
 // Subscriber callbacks
 // ------------------------------------------------
-void cmd_velocity_sub_callback(const void * msgin)
+void cmd_vel_sub_callback(const void * msgin)
 {
   const std_msgs__msg__Float32 * msg =
     (const std_msgs__msg__Float32 *)msgin;
@@ -64,7 +64,7 @@ void cmd_velocity_sub_callback(const void * msgin)
 // ------------------------------------------------
 // Timer callbacks
 // ------------------------------------------------
-void curr_velocity_timer_callback(
+void curr_vel_timer_callback(
   rcl_timer_t * timer, int64_t last_call_time)
 {
   (void) last_call_time;
@@ -82,8 +82,8 @@ void curr_velocity_timer_callback(
   last_angle = curr_angle;
   last_time = current_time;
 
-  curr_velocity_msg.data = velocity;
-  rcl_publish(&curr_velocity_pub, &curr_velocity_msg, NULL);
+  curr_vel_msg.data = velocity;
+  rcl_publish(&curr_vel_pub, &curr_vel_msg, NULL);
 
 }
 
@@ -122,38 +122,38 @@ void setup()
 
   // Publisher
   rclc_publisher_init_best_effort(
-    &curr_velocity_pub,
+    &curr_vel_pub,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
-    curr_velocity_topic_name);
+    curr_vel_topic_name);
 
   // Subscriber
   rclc_subscription_init_best_effort(
-    &cmd_velocity_sub,
+    &cmd_vel_sub,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
-    cmd_velocity_topic_name);
+    cmd_vel_topic_name);
 
   // Timer
   rclc_timer_init_default(
-    &curr_velocity_timer,
+    &curr_vel_timer,
     &support,
-    RCL_MS_TO_NS(curr_velocity_pub_interval),
-    curr_velocity_timer_callback);
+    RCL_MS_TO_NS(curr_vel_pub_interval),
+    curr_vel_timer_callback);
 
   // Executor (1 sub + 1 timer)
   rclc_executor_init(&executor, &support.context, 2, &allocator);
 
   rclc_executor_add_subscription(
     &executor,
-    &cmd_velocity_sub,
-    &cmd_velocity_msg,
-    &cmd_velocity_sub_callback,
+    &cmd_vel_sub,
+    &cmd_vel_msg,
+    &cmd_vel_sub_callback,
     ON_NEW_DATA);
 
   rclc_executor_add_timer(
     &executor,
-    &curr_velocity_timer);
+    &curr_vel_timer);
 
   // ----------- FOC setup -----------
   sensor.init();

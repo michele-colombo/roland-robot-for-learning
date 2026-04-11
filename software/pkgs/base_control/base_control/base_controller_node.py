@@ -12,8 +12,8 @@ Subscriptions:
     /cmd_vel  (geometry_msgs/Twist)
 
 Publications:
-    /motor_left/cmd_velocity   (std_msgs/Float32)  - left wheel rad/s
-    /motor_right/cmd_velocity  (std_msgs/Float32)  - right wheel rad/s
+    /motor_left/cmd_vel   (std_msgs/Float32)  - left wheel rad/s
+    /motor_right/cmd_vel  (std_msgs/Float32)  - right wheel rad/s
     /motor_left/velocity_clamped  (std_msgs/Bool)  - True while output is clamped
     /motor_right/velocity_clamped (std_msgs/Bool)  - True while output is clamped
 
@@ -50,8 +50,8 @@ class BaseController(Node):
         self.add_on_set_parameters_callback(self._on_param_change)
 
         # ── publishers ──────────────────────────────────────────────────
-        self.pub_left = self.create_publisher(Float32, '/motor_left/cmd_velocity', 10)
-        self.pub_right = self.create_publisher(Float32, '/motor_right/cmd_velocity', 10)
+        self.pub_left = self.create_publisher(Float32, '/motor_left/cmd_vel', 10)
+        self.pub_right = self.create_publisher(Float32, '/motor_right/cmd_vel', 10)
         self.pub_left_clamped = self.create_publisher(Bool, '/motor_left/velocity_clamped', 10)
         self.pub_right_clamped = self.create_publisher(Bool, '/motor_right/velocity_clamped', 10)
 

@@ -49,8 +49,8 @@ rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
 
-rcl_timer_t curr_velocity_timer;
-const int curr_velocity_pub_period = 100; // ms
+rcl_timer_t curr_vel_timer;
+const int curr_vel_pub_period = 100; // ms
 
 // ================================================================
 // MotorSide
@@ -103,23 +103,23 @@ constexpr int motorCount = 2;
 // ================================================================
 // micro-ROS callbacks
 // ================================================================
-void handle_cmd_velocity(MotorSide& m, const void* msgin)
+void handle_cmd_vel(MotorSide& m, const void* msgin)
 {
   const auto* msg = static_cast<const std_msgs__msg__Float32*>(msgin);
   m.targetVelocity = msg->data;
 }
 
-void cmd_velocity_yaw_cbk(const void* msgin)
+void cmd_vel_yaw_cbk(const void* msgin)
 {
-  handle_cmd_velocity(motorYaw, msgin);
+  handle_cmd_vel(motorYaw, msgin);
 }
 
-void cmd_velocity_pitch_cbk(const void* msgin)
+void cmd_vel_pitch_cbk(const void* msgin)
 {
-  handle_cmd_velocity(motorPitch, msgin);
+  handle_cmd_vel(motorPitch, msgin);
 }
 
-void curr_velocity_timer_cbk(rcl_timer_t* timer, int64_t)
+void curr_vel_timer_cbk(rcl_timer_t* timer, int64_t)
 {
   if (!timer) return;
 
@@ -255,29 +255,29 @@ void setup()
 
   allocator = rcl_get_default_allocator();
   rclc_support_init(&support, 0, NULL, &allocator);
-  rclc_node_init_default(&node, "gimbal_controller", "", &support);
+  rclc_node_init_default(&node, "gimbal_hw_controller", "", &support);
 
   // Topics
-  motorYaw.cmdTopic    = "/gimbal_yaw/cmd_velocity";
-  motorYaw.currTopic   = "/gimbal_yaw/curr_velocity";
-  motorPitch.cmdTopic  = "/gimbal_pitch/cmd_velocity";
-  motorPitch.currTopic = "/gimbal_pitch/curr_velocity";
+  motorYaw.cmdTopic    = "/gimbal_yaw/cmd_vel";
+  motorYaw.currTopic   = "/gimbal_yaw/curr_vel";
+  motorPitch.cmdTopic  = "/gimbal_pitch/cmd_vel";
+  motorPitch.currTopic = "/gimbal_pitch/curr_vel";
 
   // Executor: 2 subs + 1 timer
   rclc_executor_init(&executor, &support.context, motorCount + 1, &allocator);
 
   // Timer
   rclc_timer_init_default(
-    &curr_velocity_timer,
+    &curr_vel_timer,
     &support,
-    RCL_MS_TO_NS(curr_velocity_pub_period),
-    curr_velocity_timer_cbk);
+    RCL_MS_TO_NS(curr_vel_pub_period),
+    curr_vel_timer_cbk);
 
-  rclc_executor_add_timer(&executor, &curr_velocity_timer);
+  rclc_executor_add_timer(&executor, &curr_vel_timer);
 
   // ROS entities per motor
-  initMotorRos(motorYaw,   cmd_velocity_yaw_cbk);
-  initMotorRos(motorPitch, cmd_velocity_pitch_cbk);
+  initMotorRos(motorYaw,   cmd_vel_yaw_cbk);
+  initMotorRos(motorPitch, cmd_vel_pitch_cbk);
 
   // Motors
   for (int i = 0; i < motorCount; ++i) {

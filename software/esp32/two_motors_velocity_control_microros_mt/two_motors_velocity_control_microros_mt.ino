@@ -46,8 +46,8 @@ rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
 
-rcl_timer_t curr_velocity_timer;
-const int curr_velocity_pub_period = 100; // ms
+rcl_timer_t curr_vel_timer;
+const int curr_vel_pub_period = 100; // ms
 
 // ================================================================
 // MotorSide
@@ -104,23 +104,23 @@ constexpr int motorCount = 2;
 // ================================================================
 // micro-ROS callbacks
 // ================================================================
-void handle_cmd_velocity(MotorSide& m, const void* msgin)
+void handle_cmd_vel(MotorSide& m, const void* msgin)
 {
   const auto* msg = static_cast<const std_msgs__msg__Float32*>(msgin);
   m.targetVelocity = msg->data;
 }
 
-void cmd_velocity_right_cbk(const void* msgin)
+void cmd_vel_right_cbk(const void* msgin)
 {
-  handle_cmd_velocity(motorRight, msgin);
+  handle_cmd_vel(motorRight, msgin);
 }
 
-void cmd_velocity_left_cbk(const void* msgin)
+void cmd_vel_left_cbk(const void* msgin)
 {
-  handle_cmd_velocity(motorLeft, msgin);
+  handle_cmd_vel(motorLeft, msgin);
 }
 
-void curr_velocity_timer_cbk(rcl_timer_t* timer, int64_t)
+void curr_vel_timer_cbk(rcl_timer_t* timer, int64_t)
 {
   if (!timer) return;
 
@@ -256,29 +256,29 @@ void setup()
 
   allocator = rcl_get_default_allocator();
   rclc_support_init(&support, 0, NULL, &allocator);
-  rclc_node_init_default(&node, "base_controller", "", &support);
+  rclc_node_init_default(&node, "base_hw_controller", "", &support);
 
   // Topics
-  motorRight.cmdTopic  = "/motor_right/cmd_velocity";
-  motorRight.currTopic = "/motor_right/curr_velocity";
-  motorLeft.cmdTopic   = "/motor_left/cmd_velocity";
-  motorLeft.currTopic  = "/motor_left/curr_velocity";
+  motorRight.cmdTopic  = "/motor_right/cmd_vel";
+  motorRight.currTopic = "/motor_right/curr_vel";
+  motorLeft.cmdTopic   = "/motor_left/cmd_vel";
+  motorLeft.currTopic  = "/motor_left/curr_vel";
 
   // Executor: 2 subs + 1 timer
   rclc_executor_init(&executor, &support.context, motorCount + 1, &allocator);
 
   // Timer
   rclc_timer_init_default(
-    &curr_velocity_timer,
+    &curr_vel_timer,
     &support,
-    RCL_MS_TO_NS(curr_velocity_pub_period),
-    curr_velocity_timer_cbk);
+    RCL_MS_TO_NS(curr_vel_pub_period),
+    curr_vel_timer_cbk);
 
-  rclc_executor_add_timer(&executor, &curr_velocity_timer);
+  rclc_executor_add_timer(&executor, &curr_vel_timer);
 
   // ROS entities per motor
-  initMotorRos(motorRight, cmd_velocity_right_cbk);
-  initMotorRos(motorLeft,  cmd_velocity_left_cbk);
+  initMotorRos(motorRight, cmd_vel_right_cbk);
+  initMotorRos(motorLeft,  cmd_vel_left_cbk);
 
   // I2C
   Wire.setClock(400000);

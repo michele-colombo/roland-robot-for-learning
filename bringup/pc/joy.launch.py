@@ -3,7 +3,7 @@ Launch file for remote control on PC: joystick, base teleop, and gimbal teleop.
 
 Starts:
     - joy_node            (reads the gamepad)
-    - teleop_twist_joy    (left stick  -> /cmd_vel)
+    - teleop_twist_joy    (left stick  -> /base/cmd_vel)
     - teleop_gimbal_joy   (right stick -> /gimbal/cmd_vel)
 """
 
@@ -33,13 +33,14 @@ def generate_launch_description():
             output='screen',
         ),
 
-        # ── Base teleop (left stick -> /cmd_vel) ───────────────────
+        # ── Base teleop (left stick -> /base/cmd_vel) ───────────────────
         Node(
             package='teleop_twist_joy',
             executable='teleop_node',
             name='teleop_twist_joy_node',
             parameters=[joy_config],
             output='screen',
+            remappings=[('/cmd_vel', '/base/cmd_vel')],  # default is /cmd_vel, but our base controller listens on /base/cmd_vel
         ),
 
         # ── Gimbal teleop (right stick -> /gimbal/cmd_vel) ─────────

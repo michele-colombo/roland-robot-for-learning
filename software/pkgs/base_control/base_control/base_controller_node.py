@@ -9,7 +9,7 @@ Differential drive kinematics (FLU):
     v_left  = (v_linear - omega * wheel_distance / 2) / wheel_radius
 
 Subscriptions:
-    /cmd_vel  (geometry_msgs/Twist)
+    /base/cmd_vel  (geometry_msgs/Twist)
 
 Publications:
     /motor_left/cmd_vel   (std_msgs/Float32)  - left wheel rad/s
@@ -57,7 +57,7 @@ class BaseController(Node):
 
         # ── subscriber ──────────────────────────────────────────────────
         self.sub_cmd_vel = self.create_subscription(
-            Twist, '/cmd_vel', self._cmd_vel_callback, 10
+            Twist, '/base/cmd_vel', self._cmd_vel_callback, 10
         )
 
         self.get_logger().info(

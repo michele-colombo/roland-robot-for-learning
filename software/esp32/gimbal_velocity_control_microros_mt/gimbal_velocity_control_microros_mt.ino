@@ -35,11 +35,11 @@ const int   motor_pole_pairs      = 11;
 const float motor_phase_resistance = 5.50f / 2.0f;
 const float motor_voltage_supply  = 12.0f;
 const float motor_voltage_limit   = 6.0f;
-const float motor_PID_velocity_P  = 0.7f;
-const float motor_PID_velocity_I  = 10.0f;
+const float motor_PID_velocity_P  = 0.2f;
+const float motor_PID_velocity_I  = 1.0f;
 const float motor_PID_velocity_D  = 0.0f;
-const float motor_PID_velocity_output_ramp = 1000.0f;
-const float motor_LPF_velocity_Tf = 0.01f;
+const float motor_PID_velocity_output_ramp = 100.0f;
+const float motor_LPF_velocity_Tf = 0.05f;
 
 // ================================================================
 // micro-ROS

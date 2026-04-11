@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
-source /opt/ros/jazzy/setup.bash
+source /opt/ros/${ROS_DISTRO}/setup.bash
 
-exec ros2 launch /GIT/roland-robot-for-learning/bringup/pc/joy.launch.py
+if [ -f /roland/ros2_wss/pc/install/setup.bash ]; then
+    source /roland/ros2_wss/pc/install/setup.bash
+fi
+
+exec "$@"

@@ -1,0 +1,40 @@
+services:
+  roland:
+    build:
+      context: .
+      args:
+        ROS_DISTRO: jazzy
+    image: roland-jetson:jazzy
+    container_name: roland-jetson
+    privileged: true
+    network_mode: host
+    ipc: host
+    pid: host
+    stdin_open: true
+    tty: true
+    entrypoint: /roland/bringup/jetson/entrypoint.sh
+    volumes:
+      - ${REPO_ROOT}:/roland
+    command: ros2 launch /roland/bringup/jetson/roland.launch.py
+
+  uros-base:
+    image: micro-ros-agent:jazzy
+    container_name: uros-base
+    privileged: true
+    network_mode: host
+    ipc: host
+    pid: host
+    volumes:
+      - /dev:/dev
+    command: ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/esp32-base
+
+  uros-gimbal:
+    image: micro-ros-agent:jazzy
+    container_name: uros-gimbal
+    privileged: true
+    network_mode: host
+    ipc: host
+    pid: host
+    volumes:
+      - /dev:/dev
+    command: ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/esp32-gimbal

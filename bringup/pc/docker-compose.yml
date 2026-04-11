@@ -1,6 +1,10 @@
 services:
   roland-pc:
-    image: my_ros:jazzy
+    build:
+      context: .
+      args:
+        ROS_DISTRO: jazzy
+    image: roland-pc:jazzy
     container_name: roland-pc
     privileged: true
     network_mode: host
@@ -8,6 +12,7 @@ services:
     pid: host
     stdin_open: true
     tty: true
+    entrypoint: /roland/bringup/pc/entrypoint.sh
     volumes:
-      - ${REPO_ROOT}:/GIT/roland-robot-for-learning
-    entrypoint: /GIT/roland-robot-for-learning/bringup/pc/entrypoint.sh
+      - ${REPO_ROOT}:/roland
+    command: ros2 launch /roland/bringup/pc/joy.launch.py

@@ -11,32 +11,35 @@
 // ================================================================
 // Pins
 // ================================================================
-const int pin_right_in1 = 32;
-const int pin_right_in2 = 33;
-const int pin_right_in3 = 25;
+// SPI (AS5048) pins
+const int pin_spi_mosi = 23;
+const int pin_spi_miso = 19;
+const int pin_spi_clk  = 18;
+const int pin_cs_yaw   = 2;
+const int pin_cs_pitch = 0;
 
-const int pin_left_in1  = 26;
-const int pin_left_in2  = 27;
-const int pin_left_in3  = 14;
+// Yaw motor
+const int pin_yaw_in1 = 14;
+const int pin_yaw_in2 = 27;
+const int pin_yaw_in3 = 26;
 
-// default i2c bus
-const int pin_right_sda = 21;
-const int pin_right_scl = 22;
-
-// AS5600 has fixed address -> second I2C bus
-const int pin_left_sda  = 19;
-const int pin_left_scl  = 23;
+// Pitch motor
+const int pin_pitch_in1 = 25;
+const int pin_pitch_in2 = 33;
+const int pin_pitch_in3 = 32;
 
 // ================================================================
 // Motor params
 // ================================================================
-const int   motor_pole_pairs      = 7;
+const int   motor_pole_pairs      = 11;
+const float motor_phase_resistance = 5.50f / 2.0f;
 const float motor_voltage_supply  = 12.0f;
 const float motor_voltage_limit   = 6.0f;
-const float motor_PID_velocity_P  = 0.05f;
+const float motor_PID_velocity_P  = 0.2f;
 const float motor_PID_velocity_I  = 1.0f;
 const float motor_PID_velocity_D  = 0.0f;
-const float motor_LPF_velocity_Tf = 0.01f;
+const float motor_PID_velocity_output_ramp = 100.0f;
+const float motor_LPF_velocity_Tf = 0.05f;
 
 // ================================================================
 // micro-ROS
@@ -54,11 +57,8 @@ const int curr_vel_pub_period = 100; // ms
 // ================================================================
 struct MotorSide
 {
-  // Hardware
-  TwoWire* wire;
-
   // FOC
-  MagneticSensorI2C sensor;
+  MagneticSensorSPI sensor;
   BLDCMotor motor;
   BLDCDriver3PWM driver;
 
@@ -77,10 +77,9 @@ struct MotorSide
   std_msgs__msg__Float32 cmdMsg;
   std_msgs__msg__Float32 currMsg;
 
-  MotorSide(int in1, int in2, int in3, TwoWire* w)
-  : wire(w)
-  , sensor(AS5600_I2C)
-  , motor(motor_pole_pairs)
+  MotorSide(int in1, int in2, int in3, int csPin)
+  : sensor(AS5048_SPI, csPin)
+  , motor(motor_pole_pairs, motor_phase_resistance)
   , driver(in1, in2, in3)
   , targetVelocity(0.0f)
   , lastAngle(0.0f)
@@ -89,16 +88,16 @@ struct MotorSide
 };
 
 // ================================================================
-// Left / Right motors
+// Yaw / Pitch motors
 // ================================================================
-MotorSide motorRight(
-  pin_right_in1, pin_right_in2, pin_right_in3, &Wire);
+MotorSide motorYaw(
+  pin_yaw_in1, pin_yaw_in2, pin_yaw_in3, pin_cs_yaw);
 
-MotorSide motorLeft(
-  pin_left_in1, pin_left_in2, pin_left_in3, &Wire1);
+MotorSide motorPitch(
+  pin_pitch_in1, pin_pitch_in2, pin_pitch_in3, pin_cs_pitch);
 
 // Convenience array
-MotorSide* motors[] = { &motorRight, &motorLeft };
+MotorSide* motors[] = { &motorYaw, &motorPitch };
 constexpr int motorCount = 2;
 
 // ================================================================
@@ -110,14 +109,14 @@ void handle_cmd_vel(MotorSide& m, const void* msgin)
   m.targetVelocity = msg->data;
 }
 
-void cmd_vel_right_cbk(const void* msgin)
+void cmd_vel_yaw_cbk(const void* msgin)
 {
-  handle_cmd_vel(motorRight, msgin);
+  handle_cmd_vel(motorYaw, msgin);
 }
 
-void cmd_vel_left_cbk(const void* msgin)
+void cmd_vel_pitch_cbk(const void* msgin)
 {
-  handle_cmd_vel(motorLeft, msgin);
+  handle_cmd_vel(motorPitch, msgin);
 }
 
 void curr_vel_timer_cbk(rcl_timer_t* timer, int64_t)
@@ -154,8 +153,8 @@ void curr_vel_timer_cbk(rcl_timer_t* timer, int64_t)
 void safeMotorPinsLow()
 {
   const int pins[] = {
-    pin_right_in1, pin_right_in2, pin_right_in3,
-    pin_left_in1,  pin_left_in2,  pin_left_in3
+    pin_yaw_in1,   pin_yaw_in2,   pin_yaw_in3,
+    pin_pitch_in1, pin_pitch_in2, pin_pitch_in3
   };
   for (int pin : pins) {
     pinMode(pin, OUTPUT);
@@ -178,7 +177,7 @@ bool allMotorsInitialized()
 
 void initMotor(MotorSide& m)
 {
-  m.sensor.init(m.wire);
+  m.sensor.init();
   m.motor.linkSensor(&m.sensor);
 
   m.driver.voltage_power_supply = motor_voltage_supply;
@@ -189,6 +188,7 @@ void initMotor(MotorSide& m)
   m.motor.PID_velocity.P = motor_PID_velocity_P;
   m.motor.PID_velocity.I = motor_PID_velocity_I;
   m.motor.PID_velocity.D = motor_PID_velocity_D;
+  m.motor.PID_velocity.output_ramp = motor_PID_velocity_output_ramp;
   m.motor.voltage_limit = motor_voltage_limit;
   m.motor.LPF_velocity.Tf = motor_LPF_velocity_Tf;
 
@@ -217,7 +217,6 @@ void initMotorRos(MotorSide& m, rclc_subscription_callback_t cbk)
     cbk,
     ON_NEW_DATA);
 }
-
 
 // ================================================================
 // Tasks
@@ -248,7 +247,7 @@ void setup()
 {
   // Force all motor PWM pins low immediately, before anything else.
   // This is to ensure output pins are in a known safe state even if
-  // micro-ROS or motor init failse and prevent them from heating up due to DC lock.
+  // micro-ROS or motor init fails and prevent them from heating up due to DC lock.
   safeMotorPinsLow();
 
   // micro-ROS (may block here waiting for agent)
@@ -256,13 +255,13 @@ void setup()
 
   allocator = rcl_get_default_allocator();
   rclc_support_init(&support, 0, NULL, &allocator);
-  rclc_node_init_default(&node, "base_hw_controller", "", &support);
+  rclc_node_init_default(&node, "gimbal_hw_controller", "", &support);
 
   // Topics
-  motorRight.cmdTopic  = "/motor_right/cmd_vel";
-  motorRight.currTopic = "/motor_right/curr_vel";
-  motorLeft.cmdTopic   = "/motor_left/cmd_vel";
-  motorLeft.currTopic  = "/motor_left/curr_vel";
+  motorYaw.cmdTopic    = "/gimbal_yaw/cmd_vel";
+  motorYaw.currTopic   = "/gimbal_yaw/curr_vel";
+  motorPitch.cmdTopic  = "/gimbal_pitch/cmd_vel";
+  motorPitch.currTopic = "/gimbal_pitch/curr_vel";
 
   // Executor: 2 subs + 1 timer
   rclc_executor_init(&executor, &support.context, motorCount + 1, &allocator);
@@ -277,15 +276,8 @@ void setup()
   rclc_executor_add_timer(&executor, &curr_vel_timer);
 
   // ROS entities per motor
-  initMotorRos(motorRight, cmd_vel_right_cbk);
-  initMotorRos(motorLeft,  cmd_vel_left_cbk);
-
-  // I2C
-  Wire.setClock(400000);
-  Wire1.setClock(400000);
-
-  Wire.begin(pin_right_sda, pin_right_scl, 400000);
-  Wire1.begin(pin_left_sda, pin_left_scl, 400000);
+  initMotorRos(motorYaw,   cmd_vel_yaw_cbk);
+  initMotorRos(motorPitch, cmd_vel_pitch_cbk);
 
   // Motors
   for (int i = 0; i < motorCount; ++i) {

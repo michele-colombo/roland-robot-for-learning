@@ -1,5 +1,5 @@
 """
-Naive Base Controller Node
+Base Controller Node
 
 Converts geometry_msgs/Twist (FLU convention) into per-wheel velocity
 commands for a differential-drive robot.
@@ -12,8 +12,8 @@ Subscriptions:
     /cmd_vel  (geometry_msgs/Twist)
 
 Publications:
-    /motor_left/cmd_velocity   (std_msgs/Float32)  - left wheel rad/s
-    /motor_right/cmd_velocity  (std_msgs/Float32)  - right wheel rad/s
+    /motor_left/cmd_vel   (std_msgs/Float32)  - left wheel rad/s
+    /motor_right/cmd_vel  (std_msgs/Float32)  - right wheel rad/s
     /motor_left/velocity_clamped  (std_msgs/Bool)  - True while output is clamped
     /motor_right/velocity_clamped (std_msgs/Bool)  - True while output is clamped
 
@@ -31,10 +31,10 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import Float32, Bool
 
 
-class NaiveBaseController(Node):
+class BaseController(Node):
 
     def __init__(self):
-        super().__init__('naive_base_controller')
+        super().__init__('base_controller')
 
         # ── declare parameters ──────────────────────────────────────────
         self.declare_parameter('wheel_radius', 0.05)
@@ -50,8 +50,8 @@ class NaiveBaseController(Node):
         self.add_on_set_parameters_callback(self._on_param_change)
 
         # ── publishers ──────────────────────────────────────────────────
-        self.pub_left = self.create_publisher(Float32, '/motor_left/cmd_velocity', 10)
-        self.pub_right = self.create_publisher(Float32, '/motor_right/cmd_velocity', 10)
+        self.pub_left = self.create_publisher(Float32, '/motor_left/cmd_vel', 10)
+        self.pub_right = self.create_publisher(Float32, '/motor_right/cmd_vel', 10)
         self.pub_left_clamped = self.create_publisher(Bool, '/motor_left/velocity_clamped', 10)
         self.pub_right_clamped = self.create_publisher(Bool, '/motor_right/velocity_clamped', 10)
 
@@ -61,7 +61,7 @@ class NaiveBaseController(Node):
         )
 
         self.get_logger().info(
-            f'Naive base controller started  '
+            f'Base controller started  '
             f'[R={self.wheel_radius:.4f} m, '
             f'D={self.wheel_distance:.4f} m, '
             f'max_vel={self.max_wheel_velocity:.2f} rad/s]'
@@ -129,7 +129,7 @@ class NaiveBaseController(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = NaiveBaseController()
+    node = BaseController()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:

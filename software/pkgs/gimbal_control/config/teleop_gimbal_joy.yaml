@@ -1,0 +1,7 @@
+/**:
+  ros__parameters:
+    max_speed: 3.14        # [rad/s] at full stick deflection
+    axis_yaw: 3           # right stick horizontal
+    axis_pitch: 4         # right stick vertical
+    invert_yaw: false
+    invert_pitch: false

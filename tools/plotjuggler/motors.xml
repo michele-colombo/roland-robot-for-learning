@@ -8,16 +8,16 @@
       <plot mode="TimeSeries" style="Lines" flip_y="false" flip_x="false">
        <range bottom="-1.870079" left="0.000000" right="144.106363" top="60.062077"/>
        <limitY/>
-       <curve name="/motor_left/cmd_velocity/data" color="#1f77b4"/>
-       <curve name="/motor_left/curr_velocity/data" color="#d62728"/>
+       <curve name="/motor_left/cmd_vel/data" color="#1f77b4"/>
+       <curve name="/motor_left/curr_vel/data" color="#d62728"/>
       </plot>
      </DockArea>
      <DockArea name="...">
       <plot mode="TimeSeries" style="Lines" flip_y="false" flip_x="false">
        <range bottom="-4.418282" left="0.000000" right="144.106363" top="67.735690"/>
        <limitY/>
-       <curve name="/motor_right/cmd_velocity/data" color="#1f77b4"/>
-       <curve name="/motor_right/curr_velocity/data" color="#d62728"/>
+       <curve name="/motor_right/cmd_vel/data" color="#1f77b4"/>
+       <curve name="/motor_right/curr_vel/data" color="#d62728"/>
       </plot>
      </DockArea>
     </DockSplitter>
@@ -48,7 +48,7 @@
    <max_array_size value="100"/>
    <boolean_strings_to_number value="true"/>
    <remove_suffix_from_strings value="true"/>
-   <selected_topics value="/motor_left/curr_velocity;/motor_left/cmd_velocity;/motor_right/curr_velocity;/motor_right/cmd_velocity"/>
+   <selected_topics value="/motor_left/curr_vel;/motor_left/cmd_vel;/motor_right/curr_vel;/motor_right/cmd_vel"/>
   </plugin>
   <plugin ID="UDP Server"/>
   <plugin ID="WebSocket Server"/>

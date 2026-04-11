@@ -21,7 +21,7 @@ def generate_launch_description():
         ),
         Node(
             package='gimbal_control',
-            executable='gimbal_controller_node',
+            executable='gimbal_controller',
             name='gimbal_controller',
             parameters=[LaunchConfiguration('params_file')],
             output='screen',
